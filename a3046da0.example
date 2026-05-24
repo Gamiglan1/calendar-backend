@@ -1,0 +1,11 @@
+PORT=4000
+CLIENT_URL=http://localhost:3000
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/unified_calendar
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:4000/api/oauth/google/callback
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+MICROSOFT_REDIRECT_URI=http://localhost:4000/api/oauth/microsoft/callback
+MICROSOFT_TENANT_ID=common
+APP_ENCRYPTION_KEY=replace-with-32-char-key

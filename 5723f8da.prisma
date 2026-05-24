@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Provider {
+  GOOGLE
+  MICROSOFT
+}
+
+enum AccountStatus {
+  ACTIVE
+  EXPIRED
+  ERROR
+  DISCONNECTED
+}
+
+model User {
+  id        String             @id @default(cuid())
+  email     String             @unique
+  name      String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  accounts  ConnectedAccount[]
+}
+
+model ConnectedAccount {
+  id                String          @id @default(cuid())
+  userId            String
+  provider          Provider
+  accountEmail      String
+  providerAccountId String?
+  accessToken       String
+  refreshToken      String?
+  expiryDate        DateTime?
+  scopes            String[]
+  status            AccountStatus   @default(ACTIVE)
+  lastSyncAt        DateTime?
+  syncCursor        String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendars         CalendarSource[]
+
+  @@unique([provider, accountEmail])
+}
+
+model CalendarSource {
+  id                 String        @id @default(cuid())
+  accountId          String
+  providerCalendarId String
+  name               String
+  color              String?
+  visible            Boolean       @default(true)
+  classification     String?
+  role               String?
+  timezone           String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  account            ConnectedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  events             UnifiedEvent[]
+
+  @@unique([accountId, providerCalendarId])
+}
+
+model UnifiedEvent {
+  id               String      @id @default(cuid())
+  calendarSourceId String
+  providerEventId  String
+  title            String?
+  description      String?
+  location         String?
+  meetingUrl       String?
+  startAt          DateTime
+  endAt            DateTime
+  timezone         String?
+  isAllDay         Boolean     @default(false)
+  status           String?
+  visibility       String?
+  organizerEmail   String?
+  attendeesJson    Json?
+  recurrenceJson   Json?
+  rawPayload       Json
+  updatedAtSource  DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  calendarSource   CalendarSource @relation(fields: [calendarSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([calendarSourceId, providerEventId])
+  @@index([startAt, endAt])
+}
